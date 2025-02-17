@@ -5,10 +5,11 @@ import { ArrowUpIcon as ArrowPathIcon, BookOpen, BrainCircuit, Calculator, BarCh
 interface ResultsProps {
   answers: Record<string, string>;
   sampleAnswers: Record<string, string>;
+  studentInfo: { name: string; teacher: string } | null;
   onReset: () => void;
 }
 
-function Results({ answers, sampleAnswers, onReset }: ResultsProps) {
+function Results({ answers, sampleAnswers, studentInfo, onReset }: ResultsProps) {
   const results = calculateResults(answers);
   const { course, level, confidence, details } = results;
 
@@ -16,6 +17,12 @@ function Results({ answers, sampleAnswers, onReset }: ResultsProps) {
     <div className="max-w-4xl mx-auto">
       <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
         <div className="text-center mb-8">
+          {studentInfo && (
+            <div className="mb-4 text-gray-600">
+              <p className="font-medium">Student: {studentInfo.name}</p>
+              <p className="text-sm">Teacher: {studentInfo.teacher}</p>
+            </div>
+          )}
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
             Your Recommended Course
           </h2>

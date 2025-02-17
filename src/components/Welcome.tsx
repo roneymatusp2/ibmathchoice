@@ -1,8 +1,9 @@
 import React from 'react';
+import { StudentIdentification } from './forms/StudentIdentification';
 import { ArrowRight, BookOpen, BrainCircuit, Calculator, BarChart as ChartBar, School } from 'lucide-react';
 
 interface WelcomeProps {
-  onStart: () => void;
+  onStart: (name: string, teacher: string) => void;
 }
 
 function Welcome({ onStart }: WelcomeProps) {
@@ -108,15 +109,7 @@ function Welcome({ onStart }: WelcomeProps) {
             </div>
           </div>
 
-          <div className="text-center">
-            <button
-              onClick={onStart}
-              className="inline-flex items-center px-8 py-3 border-2 border-school-red text-lg font-semibold rounded-lg text-white bg-school-red hover:bg-school-red/90 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-school-red"
-            >
-              Start Questionnaire
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </button>
-          </div>
+          <StudentIdentification onSubmit={onStart} />
         </div>
       </div>
     </div>
