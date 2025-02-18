@@ -1,27 +1,61 @@
-import React, { useState } from 'react';
-import { AdminLogin } from './Login';
-import { AdminDashboard } from './Dashboard';
-import { authService } from '../../services/auth';
+import React, { useState, useEffect } from 'react';
+import { Login } from './Login';
+import { supabase } from '../../lib/supabase';
 
-export function Admin() {
-  const [user, setUser] = useState(null);
+interface AdminProps {
+  onLoginSuccess?: () => void;
+  onLogout?: () => void;
+}
 
-  const handleLoginSuccess = (userData: any) => {
-    setUser(userData);
-  };
+export function Admin({ onLoginSuccess, onLogout }: AdminProps) {
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    // Check current session on component mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) {
+        onLoginSuccess?.();
+      }
+    });
+
+    // Listen for auth changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+        (event, session) => {
+          setSession(session);
+          if (session) {
+            onLoginSuccess?.();
+          }
+        }
+    );
+
+    // Cleanup subscription
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [onLoginSuccess]);
 
   const handleLogout = async () => {
-    try {
-      await authService.logout();
-      setUser(null);
-    } catch (err) {
-      console.error('Logout error:', err);
-    }
+    await supabase.auth.signOut();
+    onLogout?.();
   };
 
-  if (!user) {
-    return <AdminLogin onLoginSuccess={handleLoginSuccess} />;
+  // If no session, show login
+  if (!session) {
+    return <Login onLoginSuccess={() => onLoginSuccess?.()} />;
   }
 
-  return <AdminDashboard user={user} onLogout={handleLogout} />;
+  // If logged in, show admin dashboard
+  return (
+      <div className="p-6">
+        <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
+        <button
+            onClick={handleLogout}
+            className="bg-red-500 text-white px-4 py-2 rounded"
+        >
+          Logout
+        </button>
+        {/* Add more dashboard content here */}
+      </div>
+  );
 }
