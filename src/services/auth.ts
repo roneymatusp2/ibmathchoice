@@ -1,33 +1,25 @@
+// src/services/auth.ts
 import { supabase } from '../lib/supabase';
 
 export const authService = {
   async loginWithEmail(email: string, password: string) {
+    // sign in
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
     });
+    if (error) throw error;
 
-    if (error) {
-      console.error('Erro no login:', error.message);
-      throw error;
-    }
-
-    // Buscar informações adicionais do usuário
+    // fetch staff data
     const { data: staffData, error: staffError } = await supabase
-      .from('school_staff')
-      .select('*')
-      .eq('email', email)
-      .single();
+        .from('school_staff')
+        .select('*')
+        .eq('email', email)
+        .single();
 
-    if (staffError) {
-      console.error('Erro ao buscar dados do staff:', staffError.message);
-      throw staffError;
-    }
+    if (staffError) throw staffError;
 
-    return {
-      user: data.user,
-      staffData
-    };
+    return { user: data.user, staffData };
   },
 
   async logout() {
@@ -36,7 +28,10 @@ export const authService = {
   },
 
   async getCurrentSession() {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const {
+      data: { session },
+      error
+    } = await supabase.auth.getSession();
     if (error) throw error;
     return session;
   }

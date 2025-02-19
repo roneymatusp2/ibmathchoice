@@ -1,18 +1,13 @@
 [build]
-  command = "npm run build"
-  publish = "dist"
-  environment = { NODE_VERSION = "18" }
+command = "npm run build"
+publish = "dist"
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+from = "/*"
+to = "/index.html"
+status = 200
 
+# Remove any duplicate [build.environment] section
 [build.environment]
-  NETLIFY = "true"
-
-[dev]
-  command = "npm run dev"
-  targetPort = 5173
-  port = 8888
-  publish = "dist"
+NODE_VERSION = "18"
+NPM_FLAGS = "--version"

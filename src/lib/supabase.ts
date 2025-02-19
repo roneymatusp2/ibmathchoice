@@ -1,14 +1,14 @@
 import { createClient, SupabaseClient, AuthResponse } from '@supabase/supabase-js';
 
-// Ensure environment variables are loaded
+// Carrega as variáveis de ambiente
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+  throw new Error('Variáveis de ambiente do Supabase ausentes');
 }
 
-// Create Supabase client
+// Cria o cliente do Supabase com opções avançadas de autenticação
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
@@ -17,18 +17,14 @@ export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKe
   }
 });
 
-// Login function with comprehensive error handling
+// Função para realizar login com tratamento detalhado de erros
 export const loginUser = async (email: string, password: string) => {
   try {
-    console.log('Attempting login with:', email);
+    console.log('Tentando login com:', email);
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      console.error('Detailed login error:', {
+      console.error('Erro detalhado no login:', {
         message: error.message,
         status: error.status,
         code: error.code
@@ -36,14 +32,18 @@ export const loginUser = async (email: string, password: string) => {
       throw error;
     }
 
-    // Fetch additional staff information
+    // Busca informações adicionais na tabela "school_staff"
     const { data: staffData, error: staffError } = await supabase
         .from('school_staff')
         .select('*')
         .eq('email', email)
         .single();
 
-    console.log('Login successful:', data);
+    if (staffError) {
+      console.error('Erro ao buscar dados do staff:', staffError);
+    }
+
+    console.log('Login realizado com sucesso:', data);
 
     return {
       user: data.user,
@@ -51,46 +51,42 @@ export const loginUser = async (email: string, password: string) => {
       staffData: staffData || null
     };
   } catch (error) {
-    console.error('Comprehensive login error:', error);
+    console.error('Erro abrangente no login:', error);
     throw error;
   }
 };
 
-// Logout function
+// Função para logout
 export const logoutUser = async () => {
   try {
     const { error } = await supabase.auth.signOut();
-
     if (error) {
-      console.error('Logout error:', error);
+      console.error('Erro no logout:', error);
       throw error;
     }
-
     return true;
   } catch (error) {
-    console.error('Comprehensive logout error:', error);
+    console.error('Erro abrangente no logout:', error);
     throw error;
   }
 };
 
-// Get current session
+// Função para obter a sessão atual
 export const getCurrentSession = async () => {
   try {
     const { data: { session }, error } = await supabase.auth.getSession();
-
     if (error) {
-      console.error('Session retrieval error:', error);
+      console.error('Erro ao recuperar a sessão:', error);
       throw error;
     }
-
     return session;
   } catch (error) {
-    console.error('Comprehensive session retrieval error:', error);
+    console.error('Erro abrangente ao recuperar a sessão:', error);
     throw error;
   }
 };
 
-// Fetch staff details
+// Função para buscar os detalhes do staff com base no email
 export const getStaffDetails = async (email: string) => {
   try {
     const { data, error } = await supabase
@@ -98,20 +94,18 @@ export const getStaffDetails = async (email: string) => {
         .select('*')
         .eq('email', email)
         .single();
-
     if (error) {
-      console.error('Staff details retrieval error:', error);
+      console.error('Erro ao buscar detalhes do staff:', error);
       throw error;
     }
-
     return data;
   } catch (error) {
-    console.error('Comprehensive staff details error:', error);
+    console.error('Erro abrangente ao buscar detalhes do staff:', error);
     throw error;
   }
 };
 
-// Helper type for staff user
+// Interface para o usuário do staff
 export interface StaffUser {
   id: number;
   email: string;
@@ -122,5 +116,5 @@ export interface StaffUser {
   is_admin?: boolean;
 }
 
-// Export types for type safety
+// Exporta os tipos para garantir a segurança em tempo de compilação
 export type { SupabaseClient, AuthResponse };
